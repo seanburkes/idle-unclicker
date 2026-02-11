@@ -1,0 +1,207 @@
+{
+  "app": {
+    "name": "Idle Unclicker",
+    "version": "0.2.0",
+    "debugMode": false
+  },
+  "features": {
+    "core": {
+      "ascension": {
+        "enabled": true,
+        "description": "Prestige/Echo shard meta-progression system"
+      },
+      "characterCreation": {
+        "enabled": true,
+        "description": "Custom character creation with silly races/classes"
+      },
+      "offlineProgression": {
+        "enabled": true,
+        "description": "Progress while app is closed (8+ hour gate)"
+      },
+      "playerAutomaton": {
+        "enabled": true,
+        "description": "AI that makes combat and resource decisions"
+      }
+    },
+    "phase1": {
+      "skillTree": {
+        "enabled": false,
+        "description": "Passive hex-grid skill progression",
+        "unlockRate": {
+          "base": 0.01,
+          "earlyGame": 0.02,
+          "midGame": 0.015
+        }
+      },
+      "bestiary": {
+        "enabled": false,
+        "description": "Monster knowledge tracking system",
+        "milestones": {
+          "level1": 10,
+          "level2": 50,
+          "level3": 100,
+          "level4": 500
+        }
+      }
+    },
+    "phase2": {
+      "mercenaries": {
+        "enabled": false,
+        "description": "Hire AI companions to join your party"
+      },
+      "guildHall": {
+        "enabled": false,
+        "description": "Meta-progression hub with room upgrades"
+      }
+    },
+    "phase3": {
+      "enchanting": {
+        "enabled": false,
+        "description": "Socket gems and enchant items"
+      },
+      "bossRush": {
+        "enabled": false,
+        "description": "Every 5th floor is a boss with unique mechanics"
+      },
+      "professions": {
+        "enabled": false,
+        "description": "Passive gathering (mining, herbalism, skinning)"
+      }
+    },
+    "phase4": {
+      "equipmentSets": {
+        "enabled": false,
+        "description": "Equipment sets with 2/4/6 piece bonuses, synergies, and corruption"
+      },
+      "transmutationAlchemy": {
+        "enabled": false,
+        "description": "Transmute items between tiers and brew potions for combat buffs"
+      },
+      "legendaryItems": {
+        "enabled": false,
+        "description": "Unique legendary items with powerful effects, sentience, and reforging"
+      }
+    },
+    "phase5": {
+      "infiniteSpiral": {
+        "enabled": false,
+        "description": "Endless dungeon loops with escalating difficulty and permanent tale bonuses"
+      }
+    },
+    "debug": {
+      "debugMode": {
+        "enabled": false,
+        "description": "Show debug information and tools"
+      },
+      "fastCombat": {
+        "enabled": false,
+        "description": "Speed up combat ticks for testing"
+      }
+    }
+  },
+  "gameplay": {
+    "offlineProgression": {
+      "minHours": 8,
+      "maxCycles": 100,
+      "cycleLengthMinutes": 5
+    },
+    "ascension": {
+      "hpBonusPercent": 5,
+      "maxHpBonusPercent": 100,
+      "potionBonus": 1,
+      "maxPotionBonus": 10,
+      "xpBonusPercent": 10,
+      "maxXpBonusPercent": 200,
+      "depthBonus": 1,
+      "maxDepthBonus": 10
+    },
+    "combat": {
+      "tickIntervalSeconds": 1,
+      "gameTickIntervalSeconds": 5,
+      "focusTickIntervalSeconds": 30,
+      "saveIntervalSeconds": 60
+    },
+    "character": {
+      "startingHealth": 8,
+      "startingPotions": 0,
+      "maxPotions": 20,
+      "potionHealPercent": 50
+    }
+  },
+  "ui": {
+    "fonts": {
+      "primary": "RobotoMono",
+      "fallback": ["NotoSans", "monospace"]
+    },
+    "colors": {
+      "primary": "#00FF00",
+      "secondary": "#0088FF",
+      "danger": "#FF0000",
+      "warning": "#FFAA00",
+      "background": "#000000"
+    },
+    "layout": {
+      "mapMaxHeightPercent": 50,
+      "buttonMinHeight": 56,
+      "logMaxLines": 100
+    }
+  },
+  "monsters": {
+    "types": [
+      "goblin",
+      "orc",
+      "skeleton",
+      "zombie",
+      "spider",
+      "bat",
+      "rat",
+      "slime",
+      "ghost",
+      "demon",
+      "dragon",
+      "lich"
+    ],
+    "encounterBaseChance": 0.3,
+    "encounterDepthMultiplier": 0.05
+  },
+  "skillTree": {
+    "branches": {
+      "combat": {
+        "color": "#FF4444",
+        "nodes": [
+          {"id": "c1", "name": "Sharp Edge", "tier": 1, "bonus": {"damage": 0.05}},
+          {"id": "c2", "name": "Quick Strike", "tier": 2, "bonus": {"attackSpeed": 0.03}},
+          {"id": "c3", "name": "Precise Hit", "tier": 2, "bonus": {"critChance": 0.02}},
+          {"id": "c4", "name": "Brutal Force", "tier": 3, "bonus": {"damage": 0.10, "damageTaken": 0.05}},
+          {"id": "c5", "name": "Bloodlust", "tier": 3, "bonus": {"lifeSteal": 0.02}},
+          {"id": "c6", "name": "Berserker", "tier": 4, "bonus": {"berserkDamage": 0.20}},
+          {"id": "c7", "name": "Executioner", "tier": 5, "bonus": {"execute": 1.0}}
+        ]
+      },
+      "survival": {
+        "color": "#44FF44",
+        "nodes": [
+          {"id": "s1", "name": "Thick Skin", "tier": 1, "bonus": {"damageReduction": 0.05}},
+          {"id": "s2", "name": "Fast Recovery", "tier": 2, "bonus": {"hpRegen": 0.01}},
+          {"id": "s3", "name": "Evasive", "tier": 2, "bonus": {"evasion": 0.03}},
+          {"id": "s4", "name": "Toughness", "tier": 3, "bonus": {"maxHp": 0.10}},
+          {"id": "s5", "name": "Second Wind", "tier": 3, "bonus": {"secondWind": 1.0}},
+          {"id": "s6", "name": "Iron Will", "tier": 4, "bonus": {"statusImmunity": 1.0}},
+          {"id": "s7", "name": "Immortal", "tier": 5, "bonus": {"resurrection": 1.0}}
+        ]
+      },
+      "wealth": {
+        "color": "#FFAA00",
+        "nodes": [
+          {"id": "w1", "name": "Lucky", "tier": 1, "bonus": {"goldFind": 0.10}},
+          {"id": "w2", "name": "Scavenger", "tier": 2, "bonus": {"potionDrop": 0.15}},
+          {"id": "w3", "name": "Haggler", "tier": 2, "bonus": {"shopDiscount": 0.10}},
+          {"id": "w4", "name": "Treasure Hunter", "tier": 3, "bonus": {"itemQuality": 0.10}},
+          {"id": "w5", "name": "Efficient", "tier": 3, "bonus": {"xpGain": 0.10}},
+          {"id": "w6", "name": "Midas Touch", "tier": 4, "bonus": {"goldPerKill": 1.0}},
+          {"id": "w7", "name": "Wealthy", "tier": 5, "bonus": {"goldInterest": 0.01}}
+        ]
+      }
+    }
+  }
+}
