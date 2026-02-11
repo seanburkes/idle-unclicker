@@ -1,0 +1,57 @@
+name: idle_unclicker
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.10.8
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State persistence
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  
+  # Background processing
+  workmanager: ^0.9.0+3
+  
+  # Anti-cheat time
+  flutter_kronos: ^0.1.1+2
+  
+  # Notifications
+  flutter_local_notifications: ^17.2.3
+  
+  # Storage
+  path_provider: ^2.1.1
+  
+  # State management
+  provider: ^6.1.1
+  
+  # Crypto for hashing
+  crypto: ^3.0.3
+  feature_flags: ^0.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.7
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/config.json
+  
+  fonts:
+    - family: RobotoMono
+      fonts:
+        - asset: fonts/RobotoMono-Regular.ttf
+        - asset: fonts/RobotoMono-Bold.ttf
+          weight: 700
+    - family: NotoSans
+      fonts:
+        - asset: fonts/NotoSans-Regular.ttf
