@@ -1,0 +1,35 @@
+# OS/editor noise
+.DS_Store
+*.swp
+*.swo
+*.log
+*.tmp
+*.iml
+.idea/
+
+# Dart / Flutter tooling
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Build outputs
+build/
+**/build/
+coverage/
+
+# Generated docs
+doc/api/
+**/doc/api/
+
+# Flutter platform/generated artifacts
+**/ios/Flutter/.last_build_id
+app.*.symbols
+app.*.map.json
+
+# Android Studio build artifacts
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
