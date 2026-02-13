@@ -166,11 +166,12 @@ class Character extends HiveObject {
 
     // Class determines starting equipment
     final classEquipment = {
-      'Warrior': {'weapon': 'heavy', 'armor': 'chain'},
+      // Everyone starts with a dagger; armor remains class flavored.
+      'Warrior': {'weapon': 'quick', 'armor': 'chain'},
       'Rogue': {'weapon': 'quick', 'armor': 'leather'},
-      'Mage': {'weapon': 'precise', 'armor': 'cloth'},
-      'Ranger': {'weapon': 'balanced', 'armor': 'leather'},
-      'Cleric': {'weapon': 'balanced', 'armor': 'chain'},
+      'Mage': {'weapon': 'quick', 'armor': 'cloth'},
+      'Ranger': {'weapon': 'quick', 'armor': 'leather'},
+      'Cleric': {'weapon': 'quick', 'armor': 'chain'},
     };
 
     final equip = classEquipment[characterClass] ?? classEquipment['Warrior']!;
