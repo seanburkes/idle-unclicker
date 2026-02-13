@@ -4,6 +4,21 @@ part 'equipment.g.dart';
 
 @HiveType(typeId: 2)
 class Equipment extends HiveObject {
+  static const List<String> primarySlots = [
+    'head',
+    'shoulders',
+    'chest',
+    'gloves',
+    'pants',
+    'feet',
+    'main_hand',
+    'off_hand',
+  ];
+
+  static const List<String> songSlots = ['knees', 'toes', 'eyes', 'ears', 'mouth', 'nose'];
+
+  static const List<String> allSlots = [...primarySlots, ...songSlots];
+
   @HiveField(0)
   String name;
 

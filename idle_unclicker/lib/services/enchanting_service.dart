@@ -301,6 +301,32 @@ class EnchantingService {
         return 'Gloves';
       case 'boots':
         return 'Boots';
+      case 'head':
+        return 'Head';
+      case 'shoulders':
+        return 'Shoulders';
+      case 'chest':
+        return 'Chest';
+      case 'pants':
+        return 'Pants';
+      case 'feet':
+        return 'Feet';
+      case 'main_hand':
+        return 'Main Hand';
+      case 'off_hand':
+        return 'Off Hand';
+      case 'knees':
+        return 'Knees';
+      case 'toes':
+        return 'Toes';
+      case 'eyes':
+        return 'Eyes';
+      case 'ears':
+        return 'Ears';
+      case 'mouth':
+        return 'Mouth';
+      case 'nose':
+        return 'Nose';
       default:
         return slot.capitalize();
     }
