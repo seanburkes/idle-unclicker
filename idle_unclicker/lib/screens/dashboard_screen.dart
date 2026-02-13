@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/equipment.dart';
 import '../providers/game_provider.dart';
 import '../utils/dungeon_generator.dart';
 import '../utils/rpg_system.dart';
@@ -156,6 +157,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         'hp': game.character?.currentHealth ?? 0,
         'maxHp': game.character?.maxHealth ?? 0,
         'gold': game.character?.gold ?? 0,
+        'townHealSecs': game.townHealingSecondsRemaining,
         'isInSpiral': game.isInSpiral,
         'currentSpiralLoop': game.currentSpiralLoop,
       },
@@ -267,6 +269,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                       fontSize: 12,
                     ),
                   ),
+                  if ((data['townHealSecs'] as int) > 0)
+                    Text(
+                      'Heal: ${data['townHealSecs']}s',
+                      style: const TextStyle(color: Colors.cyan, fontSize: 12),
+                    ),
                   Text(
                     data['location'] as String,
                     style: TextStyle(
@@ -580,6 +587,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         'inCombat': game.isInCombat,
         'isResting': game.isResting,
         'potions': game.character?.healthPotions ?? 0,
+        'townHealSecs': game.townHealingSecondsRemaining,
         'focus': game.gameState?.focusPercentage ?? 0.0,
         'multiplier': game.effectiveMultiplier,
       },
@@ -588,6 +596,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         final inCombat = data['inCombat'] as bool;
         final isResting = data['isResting'] as bool;
         final potions = data['potions'] as int;
+        final townHealSecs = data['townHealSecs'] as int;
         final focus = data['focus'] as double;
         final multiplier = data['multiplier'] as double;
 
@@ -614,8 +623,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildLargeButton(
-                      '💤 Rest at Inn',
-                      Colors.blue,
+                      townHealSecs > 0
+                          ? '💤 Healing... ${townHealSecs}s'
+                          : '💤 Rest at Inn',
+                      townHealSecs > 0 ? Colors.grey : Colors.blue,
                       () => context.read<GameProvider>().rest(),
                     ),
                   ),
@@ -769,6 +780,21 @@ class _DashboardScreenState extends State<DashboardScreen>
       builder: (context, data, child) {
         final weapon = RPGSystem.weaponTypes[data['weapon']]!;
         final armor = RPGSystem.armorTypes[data['armor']]!;
+        final equippedBySlot = <String, Map<String, dynamic>>{
+          'main_hand': {
+            'name': weapon.name,
+            'icon': '🗡️',
+            'color': Colors.orange,
+            'stats':
+                'DMG: ${weapon.baseDamage} | ACC: ${weapon.accuracyBonus > 0 ? "+" : ""}${weapon.accuracyBonus}',
+          },
+          'chest': {
+            'name': armor.name,
+            'icon': '🛡️',
+            'color': Colors.blue,
+            'stats': 'AC: ${armor.armorClass} | ENC: ${armor.encumbrance}',
+          },
+        };
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(12),
@@ -784,21 +810,19 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ),
               const SizedBox(height: 12),
-              _buildEquipmentSlot(
-                'Weapon',
-                weapon.name,
-                '🗡️',
-                Colors.orange,
-                'DMG: ${weapon.baseDamage} | ACC: ${weapon.accuracyBonus > 0 ? "+" : ""}${weapon.accuracyBonus}',
-              ),
-              const SizedBox(height: 8),
-              _buildEquipmentSlot(
-                'Armor',
-                armor.name,
-                '🛡️',
-                Colors.blue,
-                'AC: ${armor.armorClass} | ENC: ${armor.encumbrance}',
-              ),
+              ...Equipment.allSlots.map((slot) {
+                final equipped = equippedBySlot[slot];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _buildEquipmentSlot(
+                    _displaySlotName(slot),
+                    equipped?['name'] as String? ?? 'Empty',
+                    equipped?['icon'] as String? ?? _slotIcon(slot),
+                    equipped?['color'] as Color? ?? Colors.grey,
+                    equipped?['stats'] as String? ?? 'No item equipped',
+                  ),
+                );
+              }),
               const Divider(color: Colors.grey, height: 24),
               const Text(
                 'CHARACTER STATS',
@@ -840,6 +864,52 @@ class _DashboardScreenState extends State<DashboardScreen>
         );
       },
     );
+  }
+
+  String _displaySlotName(String slot) {
+    switch (slot) {
+      case 'main_hand':
+        return 'Main Hand';
+      case 'off_hand':
+        return 'Off Hand';
+      default:
+        return slot[0].toUpperCase() + slot.substring(1);
+    }
+  }
+
+  String _slotIcon(String slot) {
+    switch (slot) {
+      case 'head':
+        return '⛑️';
+      case 'shoulders':
+        return '🧥';
+      case 'chest':
+        return '🎽';
+      case 'gloves':
+        return '🧤';
+      case 'pants':
+        return '👖';
+      case 'feet':
+        return '🥾';
+      case 'main_hand':
+        return '🗡️';
+      case 'off_hand':
+        return '🛡️';
+      case 'knees':
+        return '🦵';
+      case 'toes':
+        return '🦶';
+      case 'eyes':
+        return '👀';
+      case 'ears':
+        return '👂';
+      case 'mouth':
+        return '👄';
+      case 'nose':
+        return '👃';
+      default:
+        return '•';
+    }
   }
 
   Widget _buildEquipmentSlot(

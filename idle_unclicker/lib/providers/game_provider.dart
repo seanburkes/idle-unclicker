@@ -105,6 +105,7 @@ class GameProvider extends ChangeNotifier {
   bool _isInApp = true;
   bool _ascensionAvailable = false;
   int _pendingEchoShards = 0;
+  bool _autoAdventure = false;
 
   String _currentEnemy = '';
   String _currentEnemyType = '';
@@ -116,6 +117,9 @@ class GameProvider extends ChangeNotifier {
   bool _inCombat = false;
   bool _isResting = false;
   bool _inTown = true; // Start in town
+  Timer? _townHealTimer;
+  int _townHealSecondsRemaining = 0;
+  int _townHealSecondCounter = 0;
 
   DungeonGenerator? _dungeonGenerator;
   TownGenerator? _townGenerator;
@@ -281,6 +285,9 @@ class GameProvider extends ChangeNotifier {
     }
 
     _updateNotifiers();
+    if (_inTown) {
+      _startTownHealing();
+    }
     _currentDungeonSeed = _character?.dungeonDepth ?? 1;
     _dungeonGenerator = DungeonGenerator(
       width: 60,
@@ -932,17 +939,39 @@ class GameProvider extends ChangeNotifier {
   void _gameTick() {
     if (_character == null || _gameState == null) return;
     if (!_character!.isAlive) return;
-
-    if (!_inCombat && !_isResting) {
-      final encounterChance = 0.3 + (_character!.dungeonDepth * 0.05);
-      if (ProceduralGenerator.rollPercent((encounterChance * 100).floor())) {
-        _startCombat();
-      }
-    }
+    _runAutoAdventureStep();
 
     _updateNotifiers();
     _flushLogs();
     notifyListeners();
+  }
+
+  void _runAutoAdventureStep() {
+    if (_character == null || !_autoAdventure || _inCombat || _isResting) {
+      return;
+    }
+
+    // If we ran out of potion sustain and are hurt, force town recovery.
+    if (!_inTown &&
+        _character!.healthPotions <= 0 &&
+        _character!.currentHealth < _character!.maxHealth) {
+      _log('Out of potions. Returning to town to recover.', immediate: true);
+      returnToTown();
+      return;
+    }
+
+    // Resume delving after recovery in town.
+    if (_inTown) {
+      if (_character!.currentHealth < _character!.maxHealth) {
+        _startTownHealing();
+        return;
+      }
+      enterDungeon();
+      return;
+    }
+
+    // In dungeon and idle: immediately engage next fight.
+    _startCombat();
   }
 
   void _skillTreeTick() {
@@ -1382,6 +1411,10 @@ class GameProvider extends ChangeNotifier {
       });
     }
 
+    if (_autoAdventure) {
+      Future.delayed(const Duration(milliseconds: 250), _runAutoAdventureStep);
+    }
+
     _updateNotifiers();
     _flushAndSave();
     notifyListeners();
@@ -1397,22 +1430,25 @@ class GameProvider extends ChangeNotifier {
 
     if (!ProceduralGenerator.rollPercent(dropChance)) return;
 
-    final weapons = ['quick', 'balanced', 'heavy', 'precise'];
-    final armors = ['cloth', 'leather', 'chain', 'plate'];
+    final maxTier = RPGSystem.maxGearTierForLevel(_character!.level);
+    final weapons = RPGSystem.weaponProgression;
+    final armors = RPGSystem.armorProgression;
 
     if (ProceduralGenerator.rollPercent(50)) {
-      final current = weapons.indexOf(_character!.weaponType);
-      if (current < weapons.length - 1) {
+      final current = max(0, weapons.indexOf(_character!.weaponType));
+      final target = min(maxTier, weapons.length - 1);
+      if (current < target) {
         _character!.weaponType = weapons[current + 1];
         final type = RPGSystem.weaponTypes[_character!.weaponType]!;
-        _log('Found better weapon: ${type.name}!');
+        _log('Found level-appropriate weapon: ${type.name}!');
       }
     } else {
-      final current = armors.indexOf(_character!.armorType);
-      if (current < armors.length - 1) {
+      final current = max(0, armors.indexOf(_character!.armorType));
+      final target = min(maxTier, armors.length - 1);
+      if (current < target) {
         _character!.armorType = armors[current + 1];
         final type = RPGSystem.armorTypes[_character!.armorType]!;
-        _log('Found better armor: ${type.name}!');
+        _log('Found level-appropriate armor: ${type.name}!');
       }
     }
   }
@@ -1462,7 +1498,9 @@ class GameProvider extends ChangeNotifier {
     // Return to town automatically after death
     _inTown = true;
     _character!.isAlive = true;
+    _character!.currentHealth = 1;
     _character!.healthPotions = max(3, _character!.healthPotions);
+    _startTownHealing();
 
     _ascensionAvailable = false;
     _pendingEchoShards = 0;
@@ -1563,6 +1601,7 @@ class GameProvider extends ChangeNotifier {
       'New Hero created with ${((hpMult - 1.0) * 100).round()}% bonus HP',
       immediate: true,
     );
+    _log('Issued starter weapon: Dagger', immediate: true);
     _log('Starting depth: ${_character!.dungeonDepth}', immediate: true);
   }
 
@@ -1629,6 +1668,7 @@ class GameProvider extends ChangeNotifier {
     _combatLogBox.put('log', CombatLog());
 
     _log('Welcome, $name the $race $characterClass!', immediate: true);
+    _log('You start with a dagger. Try not to drop it.', immediate: true);
     _log('Your adventure begins... probably poorly.', immediate: true);
 
     _updateNotifiers();
@@ -1649,21 +1689,82 @@ class GameProvider extends ChangeNotifier {
     return false;
   }
 
+  void _stopTownHealing() {
+    _townHealTimer?.cancel();
+    _townHealTimer = null;
+    _townHealSecondCounter = 0;
+    _townHealSecondsRemaining = 0;
+  }
+
+  void _startTownHealing({bool announce = false}) {
+    if (_character == null || !_inTown) return;
+    if (_character!.currentHealth >= _character!.maxHealth) {
+      _stopTownHealing();
+      return;
+    }
+
+    _townHealTimer?.cancel();
+    _townHealSecondCounter = 0;
+    _townHealSecondsRemaining =
+        (_character!.maxHealth - _character!.currentHealth) * 5;
+
+    if (announce) {
+      _log(
+        'Recovering in town: ${_townHealSecondsRemaining}s to full health.',
+        immediate: true,
+      );
+    }
+
+    _townHealTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_character == null || !_inTown) {
+        _stopTownHealing();
+        return;
+      }
+
+      if (_character!.currentHealth >= _character!.maxHealth) {
+        _stopTownHealing();
+        _log('Fully healed.', immediate: true);
+        _updateNotifiers();
+        notifyListeners();
+        return;
+      }
+
+      _townHealSecondCounter++;
+      _townHealSecondsRemaining = max(0, _townHealSecondsRemaining - 1);
+
+      if (_townHealSecondCounter % 5 == 0) {
+        _character!.currentHealth = min(
+          _character!.maxHealth,
+          _character!.currentHealth + 1,
+        );
+      }
+
+      _updateNotifiers();
+      notifyListeners();
+    });
+  }
+
   void rest() {
     if (_character == null) return;
     if (_inCombat) {
       _log('Cannot rest in combat!', immediate: true);
       return;
     }
+    if (!_inTown) {
+      _log('No safe rest here. Return to town to heal.', immediate: true);
+      return;
+    }
+    if (_character!.currentHealth >= _character!.maxHealth) {
+      _log('Already at full health.', immediate: true);
+      return;
+    }
 
     _isResting = true;
-    _character!.rest();
-    _log('Resting... +${_character!.maxHealth ~/ 4} HP', immediate: true);
-    _updateNotifiers();
+    _startTownHealing(announce: true);
 
-    Future.delayed(Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 1), () {
       _isResting = false;
-      _log('Rest complete.', immediate: true);
+      notifyListeners();
     });
 
     _flushAndSave();
@@ -1693,6 +1794,7 @@ class GameProvider extends ChangeNotifier {
 
     _inCombat = false;
     _isResting = false;
+    _autoAdventure = false;
     _currentEnemy = '';
 
     _character!.dungeonDepth = 1;
@@ -1802,6 +1904,7 @@ class GameProvider extends ChangeNotifier {
   void descendDeeper() {
     if (_character == null || _inCombat) return;
 
+    _autoAdventure = true;
     _character!.dungeonDepth++;
 
     // Track spiral floor progress
@@ -1824,6 +1927,7 @@ class GameProvider extends ChangeNotifier {
     );
     _updateRenderer();
     _log('Descending to level ${_character!.dungeonDepth}...', immediate: true);
+    _runAutoAdventureStep();
     _character!.save();
     notifyListeners();
   }
@@ -1845,10 +1949,14 @@ class GameProvider extends ChangeNotifier {
 
   // Town/Dungeon state
   bool get inTown => _inTown;
+  bool get isTownHealing => _townHealTimer != null && _townHealSecondsRemaining > 0;
+  int get townHealingSecondsRemaining => _townHealSecondsRemaining;
   bool get ascensionAvailable => _ascensionAvailable;
   int get pendingEchoShards => _pendingEchoShards;
   String get currentLocation => _inTown
-      ? '🏘️ Town'
+      ? isTownHealing
+            ? '🏘️ Town • Healing (${_townHealSecondsRemaining}s)'
+            : '🏘️ Town'
       : '⛏️ Dungeon Level ${_character?.dungeonDepth ?? 1}';
   DungeonGenerator? get dungeonGenerator => _dungeonGenerator;
   TownGenerator? get townGenerator => _townGenerator;
@@ -1901,6 +2009,8 @@ class GameProvider extends ChangeNotifier {
     if (_character == null) return;
     if (!_inTown) return; // Already in dungeon
 
+    _autoAdventure = true;
+    _stopTownHealing();
     _inTown = false;
     // Generate new dungeon for current level
     _currentDungeonSeed = _character!.dungeonDepth;
@@ -1931,8 +2041,8 @@ class GameProvider extends ChangeNotifier {
     _updateRenderer();
     _log('Returning to town...', immediate: true);
     _log('Welcome back to safety.', immediate: true);
-    _character!.currentHealth = _character!.maxHealth; // Heal in town
     _character!.currentMana = _character!.maxMana;
+    _startTownHealing(announce: true);
 
     // Heal companions and process maintenance
     for (final companion in _companionRoster?.companions ?? []) {
@@ -1948,6 +2058,10 @@ class GameProvider extends ChangeNotifier {
     _updateNotifiers();
     _flushAndSave();
     notifyListeners();
+
+    if (_autoAdventure) {
+      Future.delayed(const Duration(milliseconds: 250), _runAutoAdventureStep);
+    }
   }
 
   /// Browse shops in town - uses automaton for decisions
@@ -2016,6 +2130,7 @@ class GameProvider extends ChangeNotifier {
     _equipmentSetTimer?.cancel();
     _transmutationTimer?.cancel();
     _alchemyTimer?.cancel();
+    _townHealTimer?.cancel();
     _flushAndSave();
     enemyHealthPercent.dispose();
     focusPercent.dispose();

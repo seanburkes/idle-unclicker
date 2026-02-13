@@ -578,7 +578,6 @@ class PlayerAutomaton {
         );
 
         if (shouldEquip) {
-          final slotName = slot.displayName;
           if (bestLegendary.isAwakened) {
             actions.add(
               '★ LEGENDARY EQUIPPED: ${bestLegendary.name} (Awakened ${bestLegendary.effect.type.icon})',
@@ -839,12 +838,14 @@ class PlayerAutomaton {
   List<String> _tryUpgradeEquipment(Character character) {
     final actions = <String>[];
 
-    final weapons = ['quick', 'balanced', 'heavy', 'precise'];
-    final armors = ['cloth', 'leather', 'chain', 'plate'];
+    final weapons = RPGSystem.weaponProgression;
+    final armors = RPGSystem.armorProgression;
+    final maxTier = RPGSystem.maxGearTierForLevel(character.level);
 
     // Try to buy better weapon if affordable
     final currentWeaponIdx = weapons.indexOf(character.weaponType);
-    if (currentWeaponIdx < weapons.length - 1 && character.gold >= 200) {
+    if (currentWeaponIdx < min(weapons.length - 1, maxTier) &&
+        character.gold >= 200) {
       if (_random.nextDouble() < 0.3) {
         // 30% chance to find upgrade
         character.weaponType = weapons[currentWeaponIdx + 1];
@@ -856,7 +857,8 @@ class PlayerAutomaton {
 
     // Try to buy better armor
     final currentArmorIdx = armors.indexOf(character.armorType);
-    if (currentArmorIdx < armors.length - 1 && character.gold >= 200) {
+    if (currentArmorIdx < min(armors.length - 1, maxTier) &&
+        character.gold >= 200) {
       if (_random.nextDouble() < 0.3) {
         character.armorType = armors[currentArmorIdx + 1];
         character.gold -= 200;
@@ -869,19 +871,19 @@ class PlayerAutomaton {
   }
 
   Equipment _generateRandomItem(int depth) {
-    final types = ['weapon', 'armor', 'accessory'];
-    final type = types[_random.nextInt(types.length)];
+    final slots = Equipment.allSlots;
+    final slot = slots[_random.nextInt(slots.length)];
 
     final rarities = [1, 1, 1, 2, 2, 3]; // Weighted toward common
     final rarity = rarities[_random.nextInt(rarities.length)];
 
     return Equipment(
-      name: 'Found $type ($rarity★)',
-      slot: type,
+      name: 'Found ${slot.replaceAll('_', ' ')} ($rarity★)',
+      slot: slot,
       level: depth + _random.nextInt(3),
       rarity: rarity,
-      attackBonus: type == 'weapon' ? depth + rarity : 0,
-      defenseBonus: type == 'armor' ? depth + rarity : 0,
+      attackBonus: slot == 'main_hand' ? depth + rarity : 0,
+      defenseBonus: slot == 'chest' ? depth + rarity : 0,
     );
   }
 }

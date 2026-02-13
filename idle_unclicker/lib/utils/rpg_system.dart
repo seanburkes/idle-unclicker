@@ -4,6 +4,18 @@ import 'dart:math';
 /// All formulas adapted for automated idle gameplay
 class RPGSystem {
   static final Random _random = Random.secure();
+  static const List<String> weaponProgression = [
+    'quick',
+    'balanced',
+    'precise',
+    'heavy',
+  ];
+  static const List<String> armorProgression = [
+    'cloth',
+    'leather',
+    'chain',
+    'plate',
+  ];
 
   // ============================================================================
   // COMBAT MECHANICS
@@ -79,12 +91,12 @@ class RPGSystem {
 
   static final Map<String, WeaponType> weaponTypes = {
     'quick': WeaponType(
-      name: 'Quick',
+      name: 'Dagger',
       baseDamage: 5,
       speed: 1.5,
       strRequirement: 8,
       accuracyBonus: 4,
-      description: 'Fast but weak',
+      description: 'Fast starter blade',
     ),
     'balanced': WeaponType(
       name: 'Balanced',
@@ -142,6 +154,14 @@ class RPGSystem {
       description: 'Heavy protection, greatly reduces evasion',
     ),
   };
+
+  /// Gear tier caps by character level to keep drops progression-appropriate.
+  static int maxGearTierForLevel(int level) {
+    if (level >= 15) return 3;
+    if (level >= 10) return 2;
+    if (level >= 5) return 1;
+    return 0;
+  }
 
   // ============================================================================
   // MONSTER GENERATION
