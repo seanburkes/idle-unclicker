@@ -7,6 +7,11 @@ import 'presentation/widgets/atoms/stat_chip.dart';
 import 'presentation/widgets/atoms/count_badge.dart';
 import 'presentation/widgets/atoms/game_progress_bar.dart';
 import 'presentation/widgets/atoms/game_icon.dart';
+import 'presentation/widgets/molecules/game_card.dart';
+import 'presentation/widgets/molecules/stat_row.dart';
+import 'presentation/widgets/molecules/section_header.dart';
+import 'presentation/widgets/molecules/item_row.dart';
+import 'presentation/widgets/molecules/game_toggle.dart';
 
 void main() {
   runApp(const WidgetbookApp());
@@ -43,10 +48,8 @@ class WidgetbookApp extends StatelessWidget {
                 ),
                 WidgetbookUseCase(
                   name: 'Icon Button',
-                  builder: (context) => GameButton.icon(
-                    icon: Icons.add,
-                    onPressed: () {},
-                  ),
+                  builder: (context) =>
+                      GameButton.icon(icon: Icons.add, onPressed: () {}),
                 ),
               ],
             ),
@@ -74,19 +77,13 @@ class WidgetbookApp extends StatelessWidget {
               useCases: [
                 WidgetbookUseCase(
                   name: 'Strength',
-                  builder: (context) => StatChip(
-                    label: 'STR',
-                    value: 150,
-                    color: Colors.red,
-                  ),
+                  builder: (context) =>
+                      StatChip(label: 'STR', value: 150, color: Colors.red),
                 ),
                 WidgetbookUseCase(
                   name: 'Intelligence',
-                  builder: (context) => StatChip(
-                    label: 'INT',
-                    value: 120,
-                    color: Colors.blue,
-                  ),
+                  builder: (context) =>
+                      StatChip(label: 'INT', value: 120, color: Colors.blue),
                 ),
               ],
             ),
@@ -108,11 +105,8 @@ class WidgetbookApp extends StatelessWidget {
               useCases: [
                 WidgetbookUseCase(
                   name: 'Health',
-                  builder: (context) => GameProgressBar(
-                    current: 75,
-                    max: 100,
-                    color: Colors.red,
-                  ),
+                  builder: (context) =>
+                      GameProgressBar(current: 75, max: 100, color: Colors.red),
                 ),
                 WidgetbookUseCase(
                   name: 'Mana',
@@ -144,9 +138,104 @@ class WidgetbookApp extends StatelessWidget {
                 ),
                 WidgetbookUseCase(
                   name: 'Health',
-                  builder: (context) => const GameIcon(
-                    icon: Icons.favorite,
-                    color: Colors.red,
+                  builder: (context) =>
+                      const GameIcon(icon: Icons.favorite, color: Colors.red),
+                ),
+              ],
+            ),
+          ],
+        ),
+        // Molecules
+        WidgetbookCategory(
+          name: 'Molecules',
+          children: [
+            WidgetbookComponent(
+              name: 'GameCard',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Default',
+                  builder: (context) =>
+                      const GameCard(child: Text('Card Content')),
+                ),
+                WidgetbookUseCase(
+                  name: 'Red Border',
+                  builder: (context) => const GameCard(
+                    borderColor: Colors.red,
+                    child: Text('Card Content'),
+                  ),
+                ),
+              ],
+            ),
+            WidgetbookComponent(
+              name: 'StatRow',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Basic',
+                  builder: (context) =>
+                      const StatRow(label: 'Strength', value: '150'),
+                ),
+                WidgetbookUseCase(
+                  name: 'With Modifier',
+                  builder: (context) => const StatRow(
+                    label: 'Attack',
+                    value: '250',
+                    valueColor: Colors.red,
+                    modifier: '+50',
+                    modifierColor: Colors.green,
+                  ),
+                ),
+              ],
+            ),
+            WidgetbookComponent(
+              name: 'SectionHeader',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Default',
+                  builder: (context) => const SectionHeader(title: 'Inventory'),
+                ),
+                WidgetbookUseCase(
+                  name: 'Custom Color',
+                  builder: (context) =>
+                      const SectionHeader(title: 'Stats', color: Colors.red),
+                ),
+              ],
+            ),
+            WidgetbookComponent(
+              name: 'ItemRow',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Basic',
+                  builder: (context) =>
+                      ItemRow(name: 'Iron Sword', icon: Icons.shield),
+                ),
+                WidgetbookUseCase(
+                  name: 'With Count',
+                  builder: (context) => ItemRow(
+                    name: 'Health Potion',
+                    description: 'Restores 50 HP',
+                    count: 5,
+                    icon: Icons.local_drink,
+                  ),
+                ),
+              ],
+            ),
+            WidgetbookComponent(
+              name: 'GameToggle',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Off',
+                  builder: (context) => GameToggle(
+                    label: 'Auto Craft',
+                    value: false,
+                    onChanged: (_) {},
+                  ),
+                ),
+                WidgetbookUseCase(
+                  name: 'On',
+                  builder: (context) => GameToggle(
+                    label: 'Auto Craft',
+                    value: true,
+                    onChanged: (_) {},
                   ),
                 ),
               ],
