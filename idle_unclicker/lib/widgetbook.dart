@@ -12,6 +12,12 @@ import 'presentation/widgets/molecules/stat_row.dart';
 import 'presentation/widgets/molecules/section_header.dart';
 import 'presentation/widgets/molecules/item_row.dart';
 import 'presentation/widgets/molecules/game_toggle.dart';
+import 'presentation/widgets/organisms/inventory_panel.dart';
+import 'presentation/widgets/organisms/item_grid.dart';
+import 'presentation/widgets/organisms/combat_stats_panel.dart';
+import 'presentation/widgets/organisms/character_header.dart';
+import 'presentation/widgets/organisms/resource_bar_group.dart';
+import 'presentation/widgets/organisms/action_panel.dart';
 
 void main() {
   runApp(const WidgetbookApp());
@@ -236,6 +242,134 @@ class WidgetbookApp extends StatelessWidget {
                     label: 'Auto Craft',
                     value: true,
                     onChanged: (_) {},
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        // Organisms
+        WidgetbookCategory(
+          name: 'Organisms',
+          children: [
+            WidgetbookComponent(
+              name: 'InventoryPanel',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Default',
+                  builder: (context) => InventoryPanel(
+                    items: const [
+                      InventoryItem(
+                        name: 'Iron Sword',
+                        description: '+5 Attack',
+                        count: 1,
+                        icon: Icons.sports_martial_arts,
+                      ),
+                      InventoryItem(
+                        name: 'Health Potion',
+                        description: 'Restores 50 HP',
+                        count: 5,
+                        icon: Icons.local_drink,
+                      ),
+                      InventoryItem(
+                        name: 'Gold',
+                        count: 150,
+                        icon: Icons.monetization_on,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            WidgetbookComponent(
+              name: 'ItemGrid',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Default',
+                  builder: (context) => ItemGrid(
+                    items: const [
+                      GridItem(
+                        name: 'Sword',
+                        icon: Icons.sports_martial_arts,
+                        count: 1,
+                      ),
+                      GridItem(name: 'Shield', icon: Icons.shield, count: 2),
+                      GridItem(
+                        name: 'Potion',
+                        icon: Icons.local_drink,
+                        count: 5,
+                      ),
+                      GridItem(
+                        name: 'Gem',
+                        icon: Icons.diamond,
+                        isSelected: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            WidgetbookComponent(
+              name: 'CombatStatsPanel',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Default',
+                  builder: (context) => const CombatStatsPanel(
+                    health: 75,
+                    maxHealth: 100,
+                    mana: 50,
+                    maxMana: 100,
+                    attack: 25,
+                    defense: 15,
+                  ),
+                ),
+              ],
+            ),
+            WidgetbookComponent(
+              name: 'CharacterHeader',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Default',
+                  builder: (context) => const CharacterHeader(
+                    name: 'Hero',
+                    characterClass: 'Warrior',
+                    level: 15,
+                  ),
+                ),
+              ],
+            ),
+            WidgetbookComponent(
+              name: 'ResourceBarGroup',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Default',
+                  builder: (context) => const ResourceBarGroup(
+                    health: 75,
+                    maxHealth: 100,
+                    mana: 50,
+                    maxMana: 100,
+                    energy: 80,
+                    maxEnergy: 100,
+                    experience: 2500,
+                    maxExperience: 5000,
+                  ),
+                ),
+              ],
+            ),
+            WidgetbookComponent(
+              name: 'ActionPanel',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Default',
+                  builder: (context) => ActionPanel(
+                    actions: const [
+                      ActionButton(
+                        label: 'Attack',
+                        icon: Icons.sports_martial_arts,
+                      ),
+                      ActionButton(label: 'Defend', icon: Icons.shield),
+                      ActionButton(label: 'Item', icon: Icons.inventory_2),
+                    ],
                   ),
                 ),
               ],
